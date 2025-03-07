@@ -1,11 +1,47 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+interface Card {
+  id: number;
+  title: string;
+  description: string;
+  imageUrl: string;
+}
+
+interface CardsResponse {
+  data: Card[];
+  nextPage: number;
+  hasMore: boolean;
+}
+
+interface AnimeCard {
+  id: number;
+  title: string;
+  description: string;
+  imageUrl: string;
+  rating: number;
+  studio: string;
+  episodes: number;
+  year: number;
+}
+
+interface AnimeCardsResponse {
+  data: AnimeCard[];
+  nextPage: number;
+  hasMore: boolean;
+}
+
+interface GetCardsParams {
+  page?: number;
+  limit?: number;
+}
+
 export const cardsApi = createApi({
   reducerPath: "cardsApi",
   baseQuery: fetchBaseQuery({ baseUrl: "/" }),
+  tagTypes: ["Cards", "AnimeCards"],
   endpoints: (builder) => ({
     // Regular query with manual pagination
-    getCards: builder.query({
+    getCards: builder.query<CardsResponse, GetCardsParams>({
       query: ({ page = 0, limit = 10 }) => ({
         url: "/api/cards",
         params: { page, limit }
@@ -32,7 +68,11 @@ export const cardsApi = createApi({
     }),
 
     // Using infiniteQuery for anime cards
-    getAnimeCards: builder.infiniteQuery({
+    getAnimeCards: builder.infiniteQuery<
+      AnimeCardsResponse,
+      { queryArg: any; pageParam?: number },
+      number
+    >({
       query: ({ queryArg, pageParam = 0 }) => ({
         url: "/api/anime-cards",
         params: { page: pageParam, limit: 10 }
@@ -44,7 +84,7 @@ export const cardsApi = createApi({
       // Configure infinite query behavior
       infiniteQueryOptions: {
         initialPageParam: 0,
-        getNextPageParam: (lastPage, allPages, lastPageParam) => {
+        getNextPageParam: (lastPage, allPages, lastPageParam: number) => {
           return lastPage.hasMore ? lastPageParam + 1 : undefined;
         }
       },

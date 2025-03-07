@@ -2,6 +2,7 @@ import { useRef, useEffect } from "react";
 import styled from "styled-components";
 import { useGetAnimeCardsInfiniteQuery } from "../lib/api/cardsApi";
 import AnimeCard from "./AnimeCard";
+import React from "react";
 
 const Container = styled.div`
   max-width: 1100px;
@@ -74,17 +75,17 @@ const Header = styled.h1`
   }
 `;
 
-const AnimeCardList = () => {
-  const loader = useRef(null);
+const AnimeCardList: React.FC = () => {
+  const loader = useRef<HTMLDivElement>(null);
 
   // Using the infiniteQuery hook
   const { data, error, isLoading, isFetching, hasNextPage, fetchNextPage } =
     useGetAnimeCardsInfiniteQuery({
-      limit: 8
+      queryArg: { limit: 8 }
     });
 
   // Intersection observer handler
-  const handleObserver = (entries) => {
+  const handleObserver = (entries: IntersectionObserverEntry[]): void => {
     const target = entries[0];
     if (target.isIntersecting && hasNextPage && !isFetching) {
       fetchNextPage();
@@ -116,7 +117,12 @@ const AnimeCardList = () => {
     console.error("Error loading anime cards:", error);
     return (
       <ErrorMessage>
-        Error loading anime cards: {error.status || error.message || "Unknown error"}
+        Error loading anime cards:{" "}
+        {typeof error === "object" && error !== null && "status" in error
+          ? String(error.status)
+          : typeof error === "object" && error !== null && "message" in error
+          ? String(error.message)
+          : "Unknown error"}
       </ErrorMessage>
     );
   }
@@ -137,7 +143,7 @@ const AnimeCardList = () => {
       <div ref={loader} style={{ height: "20px", margin: "20px 0" }}>
         {isFetching && <LoadingIndicator />}
         {!hasNextPage && allItems.length > 0 && (
-          <LoadingMessage>You've reached the end of the collection</LoadingMessage>
+          <LoadingMessage>You&apos;ve reached the end of the collection</LoadingMessage>
         )}
       </div>
     </Container>
