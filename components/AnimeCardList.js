@@ -122,7 +122,7 @@ const AnimeCardList = () => {
   }
 
   // Get all items from all pages
-  const allItems = data?.pages?.flatMap((page) => page.items) || [];
+  const allItems = data?.pages?.flatMap((page) => page.data) || [];
 
   return (
     <Container>
