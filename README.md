@@ -1,124 +1,41 @@
-# RTK Query Infinite Scroll Example
+# RTK Query Infinite Scroll 示例
 
-This is a demo project showcasing two approaches to infinite scrolling with RTK Query, Next.js, and styled-components.
+這個項目展示了如何使用 Redux Toolkit Query (RTK Query) 的 `infiniteQuery` 功能實現無限滾動。
 
-## Features
+## 技術棧
 
-- Two different implementations of infinite scrolling:
-  1. **Standard approach** - Using basic `merge` logic with RTK Query's `builder.query`
-  2. **Alternative approach** - Using a more advanced merge strategy with anime-style cards
-- Responsive card grid layouts with styled-components
-- Mock API using MSW (Mock Service Worker)
-- Loading indicators and error handling
-- Tab interface to compare both implementations
-
-## Tech Stack
-
+- React.js
 - Next.js
-- Redux Toolkit Query (RTK Query)
-- styled-components
-- MSW (Mock Service Worker)
+- Redux Toolkit
+- RTK Query
+- Styled Components
 
-## Getting Started
+## 功能
 
-1. Install dependencies:
-   ```bash
+- 使用 RTK Query 的 infiniteQuery 功能
+- 使用 Intersection Observer API 實現無限滾動
+- 響應式卡片佈局
+- 動態加載動畫
+- 模擬 API 延遲
+
+## 開始使用
+
+1. 安裝依賴：
+
+   ```
    npm install
-   # or
-   yarn install
    ```
 
-2. Initialize MSW:
-   ```bash
-   npx msw init public
-   ```
+2. 運行開發服務器：
 
-3. Run the development server:
-   ```bash
+   ```
    npm run dev
-   # or
-   yarn dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. 打開瀏覽器，訪問 http://localhost:3000
 
-## How It Works
+## 注意事項
 
-### Standard Approach (Regular Cards)
-
-This approach uses RTK Query's standard `builder.query` with custom merge logic:
-
-```jsx
-getCards: builder.query({
-  query: ({ page = 0, limit = 10 }) => ({
-    url: '/api/cards',
-    params: { page, limit }
-  }),
-  serializeQueryArgs: ({ endpointName }) => {
-    return endpointName
-  },
-  // Merge incoming data with existing data for infinite scroll
-  merge: (currentCache, newItems) => {
-    if (currentCache) {
-      return {
-        ...newItems,
-        data: [...currentCache.data, ...newItems.data]
-      }
-    }
-    return newItems
-  },
-  forceRefetch({ currentArg, previousArg }) {
-    return currentArg !== previousArg
-  }
-})
-```
-
-- Uses `useState` to track the current page number
-- IntersectionObserver triggers page number updates
-- Manual merging of response data
-
-### Alternative Approach (Anime Cards)
-
-This approach uses RTK Query's standard query but with a more advanced merge strategy:
-
-```jsx
-getAnimeCards: builder.query({
-  query: ({ page = 0, limit = 10 }) => ({
-    url: '/api/anime-cards',
-    params: { page, limit }
-  }),
-  // Custom merge function to simulate pages array
-  merge: (currentCache, newItems) => {
-    // First page
-    if (!currentCache) {
-      return {
-        ...newItems,
-        pages: [newItems]
-      }
-    }
-    
-    // Subsequent pages - maintain a pages array
-    return {
-      ...newItems,
-      data: [...currentCache.data, ...newItems.data],
-      pages: [...(currentCache.pages || []), newItems]
-    }
-  }
-})
-```
-
-- Maintains a custom pages array in the cache
-- Uses manual page tracking with useState
-- Features a visually distinct anime card design
-- Shows how the same pattern can be adapted for different UIs
-
-## Project Structure
-
-- `/components` - React components including both card implementations
-  - `Card.js` & `CardList.js` - Regular card implementation
-  - `AnimeCard.js` & `AnimeCardList.js` - Anime-style card implementation using infiniteQuery
-  - `TabContainer.js` - Tab interface for switching between implementations
-- `/lib/api` - API services, Redux store, and MSW configuration
-- `/pages` - Next.js pages and API endpoints
-  - `/api/cards.js` - Regular cards API
-  - `/api/anime-cards.js` - Anime cards API
+- 這個示例使用了 RTK Query 2.6.0+ 版本，這是支持 infiniteQuery 功能的最低版本
+- 示例包含模擬 API 端點，位於 `/pages/api/` 目錄下
+- 無限滾動邏輯可在 `components/AnimeCardList.js` 中找到
