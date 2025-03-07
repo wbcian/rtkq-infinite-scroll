@@ -1,0 +1,212 @@
+---
+description: coding convention
+globs: *.{ts,js,json}
+alwaysApply: false
+---
+---
+description: client coding convention
+globs: client/**/*.{tsx,ts,json,gitignore}
+alwaysApply: false
+---
+# Cursor Project Rules
+
+本文檔定義了我們團隊在 Next.js 13.x 專案中的開發規範和習慣。請所有團隊成員遵循這些規則，以確保代碼一致性和可維護性。
+
+## 檔案命名規則
+
+我們採用 kebab-case 命名規範：
+
+- 檔案命名格式：`xxx-aaa-bbb.ts`
+- 所有字母小寫，單詞之間用連字符（`-`）分隔
+- 檔案名應當能清晰表達該檔案的用途和內容
+
+### 範例
+
+✅ 正確：
+
+```
+user-profile.tsx
+api-service.ts
+auth-provider.tsx
+data-fetching-utils.ts
+```
+
+❌ 錯誤：
+
+```
+userProfile.tsx (使用駝峰式而非 kebab-case)
+ApiService.ts (使用大寫開頭而非全小寫)
+auth_provider.tsx (使用下劃線而非連字符)
+```
+
+## Import 路徑規則
+
+我們使用路徑別名 (Path Aliases) 而非相對路徑進行模組導入，這有助於：
+
+1. 避免多層次的相對路徑（如 `../../../components/Button`）
+2. 提高代碼可讀性及可維護性
+3. 在移動檔案時減少修改路徑的工作量
+
+### 路徑別名設定
+
+我們在 `tsconfig.json` 中定義了以下路徑別名：
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+### 範例
+
+✅ 正確：
+
+```typescript
+import Button from "@components/common/button";
+import { useAuth } from "@hooks/use-auth";
+import { formatDate } from "@utils/date-utils";
+```
+
+❌ 錯誤：
+
+```typescript
+import Button from "../../components/common/button";
+import { useAuth } from "../../../hooks/use-auth";
+import { formatDate } from "./utils/date-utils";
+```
+
+## React 導入規則
+
+從 React 17 版本開始，已不再需要在每個使用 JSX 的檔案中顯式導入 React。這是由於 React 17 引入了新的 JSX 轉換機制，允許編譯器自動處理必要的引入。
+
+### 導入規範
+
+為了保持程式碼的簡潔和一致性，請遵循以下規則：
+
+1. **只導入需要的內容**：
+   - 若僅使用 Hooks，只需導入所需的 Hooks
+   - 不再需要為了使用 JSX 而導入 React
+
+2. **特殊 API 的處理**：
+   - 若需使用 React 的特定 API（如 `React.memo`, `React.createContext`, `React.forwardRef` 等），則需要導入 React
+
+### 範例
+
+✅ 正確：
+
+```typescript
+// 只使用 JSX 時
+function MyComponent() {
+  return <div>Hello World</div>;
+}
+
+// 使用 Hooks 時
+import { useState, useEffect } from 'react';
+
+function MyComponent() {
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    document.title = `Count: ${count}`;
+  }, [count]);
+  
+  return <div>Count: {count}</div>;
+}
+
+// 使用特定 React API 時
+import React, { useState } from 'react';
+
+const MemoizedComponent = React.memo(function MyComponent() {
+  const [count, setCount] = useState(0);
+  return <div>Count: {count}</div>;
+});
+```
+
+❌ 錯誤：
+
+```typescript
+// 不需要的 React 導入
+import React from 'react';
+
+function MyComponent() {
+  return <div>Hello World</div>;
+}
+
+// 同時也不建議這種方式
+import React, { useState, useEffect } from 'react';
+
+function MyComponent() {
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    document.title = `Count: ${count}`;
+  }, [count]);
+  
+  return <div>Count: {count}</div>;
+}
+```
+
+### 特別說明
+
+此規則適用於 React 17 及更高版本的專案。如果專案使用的是舊版 React，則仍需要在每個使用 JSX 的檔案中導入 React。
+
+## 條件語句格式規則
+
+為了保持代碼的一致性和可讀性，所有的條件語句（if、else、for、while 等）必須使用大括號 `{}` 包裹代碼塊，即使只有一行代碼。這有助於：
+
+1. 提高代碼的可讀性和一致性
+2. 減少因缺少大括號可能導致的邏輯錯誤
+3. 便於日後擴展代碼
+
+### 範例
+
+✅ 正確：
+```typescript
+if (!scrollContainerRef.current) { 
+  return;
+}
+
+if (isLoading) { 
+  return <LoadingSpinner />; 
+}
+
+for (let i = 0; i < items.length; i++) { 
+  console.log(items[i]); 
+}
+```
+
+❌ 錯誤：
+```typescript
+if (!scrollContainerRef.current) return;
+
+if (isLoading) return <LoadingSpinner />;
+
+for (let i = 0; i < items.length; i++) console.log(items[i]);
+```
+
+### 多條件語句
+
+對於多條件語句，每個條件分支都必須使用大括號：
+
+✅ 正確：
+```typescript
+if (condition) { 
+  doSomething(); 
+} else if (anotherCondition) { 
+  doSomethingElse(); 
+} else { 
+  doDefault(); 
+}
+```
+
+❌ 錯誤：
+```typescript
+if (condition) doSomething();
+else if (anotherCondition) doSomethingElse();
+else doDefault();
+```
